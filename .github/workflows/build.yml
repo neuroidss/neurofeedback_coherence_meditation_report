@@ -60,7 +60,7 @@ jobs:
           - os: ubuntu-latest
             PRE_BUILD_CMD: >
               pip install -r requirements.txt
-            BUILD_CMD: pyinstaller --add-data "/opt/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/gradio;gradio" --add-data "/opt/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/gradio_client;gradio_client" neurofeedback_coherence_meditation_report_pyinstaller.py
+            BUILD_CMD: pyinstaller --add-data /opt/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/gradio:gradio --add-data /opt/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/gradio_client:gradio_client neurofeedback_coherence_meditation_report_pyinstaller.py
             POST_BUILD_CMD: >
               cd dist &&
               ls -Rls &&
@@ -70,7 +70,7 @@ jobs:
           - os: macos-latest
             PRE_BUILD_CMD: >
               pip install -r requirements.txt
-            BUILD_CMD: pyinstaller --add-data "/Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/gradio;gradio" --add-data "/Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/gradio_client;gradio_client" neurofeedback_coherence_meditation_report_pyinstaller.py
+            BUILD_CMD: pyinstaller --add-data /Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/gradio:gradio --add-data /Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages/gradio_client:gradio_client neurofeedback_coherence_meditation_report_pyinstaller.py
             POST_BUILD_CMD: >
               cd dist &&
               ls -Rls &&
