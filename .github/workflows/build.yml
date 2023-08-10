@@ -80,7 +80,7 @@ jobs:
           - os: windows-latest
             PRE_BUILD_CMD: >
               pip install -r requirements.txt
-            BUILD_CMD: pyinstaller --add-data C:/hostedtoolcache/windows/Python/3.9.13/x64/lib/site-packages/gradio:gradio --add-data C:/hostedtoolcache/windows/Python/3.9.13/x64/lib/site-packages/gradio_client:gradio_client neurofeedback_coherence_meditation_report_pyinstaller.py
+            BUILD_CMD: pyinstaller --add-data "C:\\hostedtoolcache\\windows\\Python\\3.9.13\\x64\\lib\\site-packages\\gradio":gradio --add-data "C:\\hostedtoolcache\\windows\\Python\\3.9.13\\x64\\lib\\site-packages\\gradio_client":gradio_client neurofeedback_coherence_meditation_report_pyinstaller.py
             POST_BUILD_CMD: >
               cd dist &&
               dir &&
