@@ -1,0 +1,197 @@
+name: 'Build'
+on:
+  push:
+    branches: [ master ]  
+    tags:
+      - 'v*'
+      - 'beta-v*'
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    outputs:
+      changelog: ${{ steps.step_create_github_changelog.outputs.changelog }}
+    steps:
+      - name: "Generate release changelog"
+        id: step_create_github_changelog
+        uses: heinrichreimer/github-changelog-generator-action@v2.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} 
+
+  Make_GitHub_Release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: changelog
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+    - name: Create Release For Tag
+      id: create_release
+#      uses: actions/create-release@v1
+      uses: ncipollo/release-action@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+#        tag_name: latest
+        tag: latest
+#        release_name: Development Build
+        name: Development Build
+#        tag_name: ${{ github.ref }}
+#        release_name: Release ${{ github.ref }}
+        body: ""
+#        body: ${{ needs.changelog.outputs.changelog }}
+        draft: false
+        prerelease: true
+#        prerelease: ${{ contains(github.ref, 'beta') }}
+        allowUpdates: true
+        replacesArtifacts: true
+    - name: check_changelog
+      run: echo "${{ needs.changelog.outputs.changelog }}"
+
+  build:
+    name: Build Executables
+    needs: Make_GitHub_Release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - os: ubuntu-latest
+            PRE_BUILD_CMD: >
+              pip install -r requirements.txt
+            BUILD_CMD: pyinstaller neurofeedback_coherence_meditation_report_pyinstaller
+            POST_BUILD_CMD: >
+              cd dist &&
+              ls -Rls &&
+              zip -r9 neurofeedback_coherence_meditation_report_pyinstaller_linux_amd64 neurofeedback_coherence_meditation_report_pyinstaller
+            OUT_FILE_NAME: neurofeedback_coherence_meditation_report_pyinstaller_linux_amd64.zip
+            ASSET_MIME: application/octet-stream
+          - os: macos-latest
+            PRE_BUILD_CMD: >
+              pip install -r requirements.txt
+            BUILD_CMD: pyinstaller neurofeedback_coherence_meditation_report_pyinstaller
+            POST_BUILD_CMD: >
+              cd dist &&
+              ls -Rls &&
+              zip -r9 neurofeedback_coherence_meditation_report_pyinstaller_macos_amd64 neurofeedback_coherence_meditation_report_pyinstaller
+            OUT_FILE_NAME: neurofeedback_coherence_meditation_report_pyinstaller_macos_amd64.zip
+            ASSET_MIME: application/octet-stream
+          - os: windows-latest
+            PRE_BUILD_CMD: >
+              pip install -r requirements.txt
+            BUILD_CMD: pyinstaller neurofeedback_coherence_meditation_report_pyinstaller
+            POST_BUILD_CMD: >
+              cd dist &&
+              dir &&
+              tar.exe acvf neurofeedback_coherence_meditation_report_pyinstaller_windows_amd64.zip neurofeedback_coherence_meditation_report_pyinstaller
+            OUT_FILE_NAME: neurofeedback_coherence_meditation_report_pyinstaller_windows_amd64.zip
+            ASSET_MIME: application/vnd.microsoft.portable-executable
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.9.13'
+      - name: Install dependencies for ${{ matrix.os }}
+        run: |
+          pip install pyinstaller
+      - name: Pre-Build for ${{ matrix.os }}
+        if: ${{ matrix.PRE_BUILD_CMD != '' }}
+        run: ${{ matrix.PRE_BUILD_CMD }}
+      - name: Build with pyinstaller for ${{ matrix.os }}
+        run: ${{ matrix.BUILD_CMD }}
+      - name: Post-Build for ${{ matrix.os }}
+        if: ${{ matrix.POST_BUILD_CMD != '' }}
+        run: ${{ matrix.POST_BUILD_CMD }}
+#      - name: Upload Artifact for ItchIO Uploader
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: ${{runner.os}}
+#          path: ./dist/${{ matrix.OUT_FILE_NAME }}
+      - name: check_url
+        run: echo "${{ needs.Make_GitHub_Release.outputs.upload_url }}"
+        
+      - name: Create Release For Tag
+        id: create_release
+#      uses: actions/create-release@v1
+        uses: ncipollo/release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+#        tag_name: latest
+          tag: latest
+#        release_name: Development Build
+          name: Development Build
+#        tag_name: ${{ github.ref }}
+#        release_name: Release ${{ github.ref }}
+          body: ""
+#        body: ${{ needs.changelog.outputs.changelog }}
+          draft: false
+          prerelease: true
+#        prerelease: ${{ contains(github.ref, 'beta') }}
+          allowUpdates: true
+          replacesArtifacts: true
+#          artifacts: "./LICENSE"
+          artifacts: './dist/${{matrix.OUT_FILE_NAME}}'
+        
+#      - name: Upload release assets
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ needs.create_release.outputs.upload_url }}
+#          upload_url: "${{ needs.Make_GitHub_Release.outputs.upload_url }}"
+#          upload_url: "https://uploads.github.com/repos/neuroidss/timeflux_neurofeedback_inverse_gamepad/releases/89082576/assets{?name,label}"
+#          asset_name: '${{runner.os}}-${{matrix.OUT_FILE_NAME}}'
+#          asset_path: './dist/${{matrix.OUT_FILE_NAME}}'
+#          asset_content_type: ${{ matrix.ASSET_MIME }}
+#          asset_name: '${{runner.os}}-LICENSE_'
+#          asset_path: './LICENSE'
+#          asset_content_type: text/plain
+#  purge_release_if_failed:
+#    name: Delete release if build failed
+#    needs: build
+#    runs-on: ubuntu-latest
+#    if: ${{ failure() || cancelled() }}
+#    steps:
+#    - uses: dev-drprasad/delete-tag-and-release@v0.2.0
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      with:
+#        delete_release: true
+#        tag_name: ${{ github.ref_name }}
+
+#  release_itchio:
+#    name: Release on itch.io
+#    needs: build
+#    runs-on: ubuntu-latest
+#    strategy:
+#      fail-fast: true
+#      matrix:
+#        include:
+#          - channel: Linux
+#            OUT_FILE_NAME: timeflux_neurofeedback_inverse_gamepad
+#          - channel: macOS
+#            OUT_FILE_NAME: timeflux_neurofeedback_inverse_gamepad.zip
+#          - channel: Windows
+#            OUT_FILE_NAME: timeflux_neurofeedback_inverse_gamepad.exe
+#    steps:
+#      - name: Downloading Artifacts for ${{ matrix.channel }}
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: ${{matrix.channel}}
+#          path: './'
+#      - name: Display downloaded files for ${{ matrix.channel }}
+#        run: ls -R
+#        working-directory: ./
+#      - name: Upload ${{ matrix.channel }} to itch.io project
+#        uses: josephbmanley/butler-publish-itchio-action@master
+#        env:
+#          BUTLER_CREDENTIALS: ${{ secrets.ITCHIO_API_KEY }}
+#          CHANNEL: ${{ matrix.channel }}
+#          ITCH_GAME: swish-and-frick
+#          ITCH_USER: daanbreur
+#          PACKAGE: './${{matrix.OUT_FILE_NAME}}'
+#          VERSION: ${{ github.ref_name }}
