@@ -163,35 +163,3 @@ jobs:
 #        delete_release: true
 #        tag_name: ${{ github.ref_name }}
 
-#  release_itchio:
-#    name: Release on itch.io
-#    needs: build
-#    runs-on: ubuntu-latest
-#    strategy:
-#      fail-fast: true
-#      matrix:
-#        include:
-#          - channel: Linux
-#            OUT_FILE_NAME: timeflux_neurofeedback_inverse_gamepad
-#          - channel: macOS
-#            OUT_FILE_NAME: timeflux_neurofeedback_inverse_gamepad.zip
-#          - channel: Windows
-#            OUT_FILE_NAME: timeflux_neurofeedback_inverse_gamepad.exe
-#    steps:
-#      - name: Downloading Artifacts for ${{ matrix.channel }}
-#        uses: actions/download-artifact@v3
-#        with:
-#          name: ${{matrix.channel}}
-#          path: './'
-#      - name: Display downloaded files for ${{ matrix.channel }}
-#        run: ls -R
-#        working-directory: ./
-#      - name: Upload ${{ matrix.channel }} to itch.io project
-#        uses: josephbmanley/butler-publish-itchio-action@master
-#        env:
-#          BUTLER_CREDENTIALS: ${{ secrets.ITCHIO_API_KEY }}
-#          CHANNEL: ${{ matrix.channel }}
-#          ITCH_GAME: swish-and-frick
-#          ITCH_USER: daanbreur
-#          PACKAGE: './${{matrix.OUT_FILE_NAME}}'
-#          VERSION: ${{ github.ref_name }}
