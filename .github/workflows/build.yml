@@ -98,7 +98,7 @@ jobs:
           python-version: '3.9.13'
       - name: Install dependencies for ${{ matrix.os }}
         run: |
-          pip install pyinstaller
+          pip install pyinstaller==5.13.0
       - name: Pre-Build for ${{ matrix.os }}
         if: ${{ matrix.PRE_BUILD_CMD != '' }}
         run: ${{ matrix.PRE_BUILD_CMD }}
