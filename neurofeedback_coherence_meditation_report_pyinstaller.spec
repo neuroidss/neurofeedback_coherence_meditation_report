@@ -3,12 +3,23 @@
 
 block_cipher = None
 
+import sys
+if sys.platform.startswith('win'):
+#  site_packages='C:/Python39/Lib/site-packages'
+  site_packages='c:/hostedtoolcache/windows/python/3.9.13/x64/lib/site-packages'
+
+if sys.platform.startswith('linux'):
+#  site_packages='./env/lib/python3.9/site-packages'
+  site_packages='/opt/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages'
+
+if sys.platform.startswith('darwin'):
+  site_packages='/Users/runner/hostedtoolcache/Python/3.9.13/x64/lib/python3.9/site-packages'
 
 a = Analysis(
     ['neurofeedback_coherence_meditation_report_pyinstaller.py'],
     pathex=[],
     binaries=[],
-    datas=[('./env/lib/python3.9/site-packages/gradio', 'gradio'), ('./env/lib/python3.9/site-packages/gradio_client', 'gradio_client')],
+    datas=[(site_packages+'/gradio', 'gradio'), (site_packages+'/gradio_client', 'gradio_client')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
